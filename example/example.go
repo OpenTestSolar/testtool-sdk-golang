@@ -1,19 +1,3 @@
-# testtool-sdk-golang
-TestTool Golang SDK  for TestSolar
-
-## Installation
-
-Use the `go get` command to install this SDK:
-
-```bash
-go get github.com/OpenTestSolar/testtool-sdk-golang
-```
-
-## Usage Example
-
-Here is a simple usage example:
-
-```go
 package main
 
 import (
@@ -59,5 +43,3 @@ func main() {
 		fmt.Printf("Failed to close reporter: %v\n", err)
 	}
 }
-```
-
