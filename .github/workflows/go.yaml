@@ -23,5 +23,5 @@ jobs:
     - name: Get dependencies
       run: go mod download
 
-    - name: Run tests
-      run: go test -v ./...
+    - name: Run tests and check coverage
+      run: ./scripts/coverage.sh
