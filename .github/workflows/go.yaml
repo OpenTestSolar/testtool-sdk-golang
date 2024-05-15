@@ -1,0 +1,30 @@
+name: Go
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Run Go Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['1.18', '1.19', '1.20', '1.21', '1.22']
+
+    steps:
+    - name: Set up Go ${{ matrix.python-version }}
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.python-version }}
+
+    - name: Check out code
+      uses: actions/checkout@v4
+
+    - name: Get dependencies
+      run: go mod download
+
+    - name: Run tests and check coverage
+      run: ./scripts/coverage.sh
