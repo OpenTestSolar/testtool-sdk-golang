@@ -28,7 +28,7 @@ func NewReporterClient() (api.Reporter, error) {
 
 	lock, err := lockfile.New(lockFilePath)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create lock file")
+		return nil, errors.Wrapf(err, "failed to create lock file: %s", lockFilePath)
 	}
 
 	return &ReporterClient{
@@ -80,22 +80,22 @@ func (r *ReporterClient) writeToPipe(magicNumber uint32, data []byte) error {
 
 	// Write magic number
 	if err := binary.Write(r.pipeIO, binary.LittleEndian, magicNumber); err != nil {
-		return err
+		return errors.Wrap(err, "failed to write magic number to pipe")
 	}
 
 	// Write length
 	if err := binary.Write(r.pipeIO, binary.LittleEndian, length); err != nil {
-		return err
+		return errors.Wrap(err, "failed to write length of data to pipe")
 	}
 
 	// Write data
 	if _, err := r.pipeIO.Write(data); err != nil {
-		return err
+		return errors.Wrap(err, "failed to write data to pipe")
 	}
 
 	// Flush the pipe if possible
 	if err := r.pipeIO.Sync(); err != nil {
-		return err
+		return errors.Wrap(err, "failed to flush pipe")
 	}
 
 	return nil
