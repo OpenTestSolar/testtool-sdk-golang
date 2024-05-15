@@ -2,6 +2,6 @@ package model
 
 // TestCase represents a test case with a name and a set of attributes.
 type TestCase struct {
-	Name       string
-	Attributes map[string]string
+	Name       string            `json:"Name"`
+	Attributes map[string]string `json:"Attributes"`
 }
