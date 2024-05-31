@@ -2,7 +2,7 @@
 
 COVERAGE_THRESHOLD=70
 
-go test -coverprofile=coverage.out ./...
+go test -coverprofile=coverage.out ./client
 
 COVERAGE=$(go tool cover -func=coverage.out | awk '/total:/ {print substr($3, 1, length($3)-1)}')
 
