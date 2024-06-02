@@ -8,6 +8,6 @@ type LoadError struct {
 
 // LoadResult represents the result of a loading process, including any errors.
 type LoadResult struct {
-	Tests      []TestCase  `json:"Tests"`
-	LoadErrors []LoadError `json:"LoadErrors"`
+	Tests      []*TestCase  `json:"Tests"`
+	LoadErrors []*LoadError `json:"LoadErrors"`
 }

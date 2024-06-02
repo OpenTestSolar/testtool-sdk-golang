@@ -66,12 +66,12 @@ type Attachment struct {
 
 // TestCaseLog represents a log entry for a test case.
 type TestCaseLog struct {
-	Time         time.Time            `json:"-"`
-	Level        LogLevel             `json:"Level"`
-	Content      string               `json:"Content"`
-	AssertError  TestCaseAssertError  `json:"AssertError"`
-	RuntimeError TestCaseRuntimeError `json:"RuntimeError"`
-	Attachments  []Attachment         `json:"Attachments"`
+	Time         time.Time             `json:"-"`
+	Level        LogLevel              `json:"Level"`
+	Content      string                `json:"Content"`
+	AssertError  *TestCaseAssertError  `json:"AssertError"`
+	RuntimeError *TestCaseRuntimeError `json:"RuntimeError"`
+	Attachments  []*Attachment         `json:"Attachments"`
 }
 
 // MarshalJSON implements the json.Marshaler interface for TestCaseLog.
@@ -88,11 +88,11 @@ func (tcl TestCaseLog) MarshalJSON() ([]byte, error) {
 
 // TestCaseStep represents a step in a test case.
 type TestCaseStep struct {
-	StartTime  time.Time     `json:"-"`
-	Title      string        `json:"Title"`
-	ResultType ResultType    `json:"ResultType"`
-	EndTime    time.Time     `json:"-"`
-	Logs       []TestCaseLog `json:"Logs"`
+	StartTime  time.Time      `json:"-"`
+	Title      string         `json:"Title"`
+	ResultType ResultType     `json:"ResultType"`
+	EndTime    time.Time      `json:"-"`
+	Logs       []*TestCaseLog `json:"Logs"`
 }
 
 // MarshalJSON implements the json.Marshaler interface for TestCaseStep.
@@ -111,12 +111,12 @@ func (tcs TestCaseStep) MarshalJSON() ([]byte, error) {
 
 // TestResult represents the result of a test case.
 type TestResult struct {
-	Test       TestCase       `json:"Test"`
-	StartTime  time.Time      `json:"-"`
-	ResultType ResultType     `json:"ResultType"`
-	Message    string         `json:"Message"`
-	EndTime    time.Time      `json:"-"`
-	Steps      []TestCaseStep `json:"Steps"`
+	Test       *TestCase       `json:"Test"`
+	StartTime  time.Time       `json:"-"`
+	ResultType ResultType      `json:"ResultType"`
+	Message    string          `json:"Message"`
+	EndTime    time.Time       `json:"-"`
+	Steps      []*TestCaseStep `json:"Steps"`
 }
 
 // MarshalJSON implements the json.Marshaler interface for TestResult.
