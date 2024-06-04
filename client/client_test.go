@@ -13,7 +13,7 @@ import (
 
 func generateLoadResults() *model.LoadResult {
 	return &model.LoadResult{
-		Tests: []model.TestCase{
+		Tests: []*model.TestCase{
 			{
 				Name: "test1",
 				Attributes: map[string]string{
@@ -21,7 +21,7 @@ func generateLoadResults() *model.LoadResult {
 				},
 			},
 		},
-		LoadErrors: []model.LoadError{
+		LoadErrors: []*model.LoadError{
 			{
 				Name:    "test2",
 				Message: "load failed",
@@ -64,7 +64,7 @@ func TestReporter_ReportLoadResult(t *testing.T) {
 
 func generateCaseResult() *model.TestResult {
 	return &model.TestResult{
-		Test: model.TestCase{
+		Test: &model.TestCase{
 			Name:       "test1",
 			Attributes: map[string]string{},
 		},
@@ -72,27 +72,27 @@ func generateCaseResult() *model.TestResult {
 		ResultType: model.ResultTypeSucceed,
 		Message:    "test passed",
 		EndTime:    time.Now(),
-		Steps: []model.TestCaseStep{
+		Steps: []*model.TestCaseStep{
 			{
 				StartTime:  time.Now(),
 				Title:      "step1",
 				ResultType: model.ResultTypeSucceed,
 				EndTime:    time.Now(),
-				Logs: []model.TestCaseLog{
+				Logs: []*model.TestCaseLog{
 					{
 						Time:    time.Now(),
 						Level:   model.LogLevelInfo,
 						Content: "step1 passed",
-						AssertError: model.TestCaseAssertError{
+						AssertError: &model.TestCaseAssertError{
 							Expect:  "expect",
 							Actual:  "actual",
 							Message: "assert failed",
 						},
-						RuntimeError: model.TestCaseRuntimeError{
+						RuntimeError: &model.TestCaseRuntimeError{
 							Summary: "runtime error",
 							Detail:  "runtime error detail",
 						},
-						Attachments: []model.Attachment{
+						Attachments: []*model.Attachment{
 							{
 								Name:           "attachment1",
 								Url:            "http://example.com/attachment1",

@@ -12,13 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['1.18', '1.19', '1.20', '1.21', '1.22']
+        golang-version: ['1.18', '1.19', '1.20', '1.21', '1.22']
 
     steps:
-    - name: Set up Go ${{ matrix.python-version }}
+    - name: Set up Go ${{ matrix.golang-version }}
       uses: actions/setup-go@v5
       with:
-        go-version: ${{ matrix.python-version }}
+        go-version: ${{ matrix.golang-version }}
 
     - name: Check out code
       uses: actions/checkout@v4
