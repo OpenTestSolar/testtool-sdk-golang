@@ -20,6 +20,7 @@ const (
 	ResultTypeIgnored    ResultType = "IGNORED"
 	ResultTypeRunning    ResultType = "RUNNING"
 	ResultTypeWaiting    ResultType = "WAITING"
+	ResultTypeFiltered   ResultType = "FILTERED"
 )
 
 // LogLevel is an enumeration of possible log levels.
