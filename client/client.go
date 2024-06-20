@@ -93,10 +93,5 @@ func (r *ReporterClient) writeToPipe(magicNumber uint32, data []byte) error {
 		return errors.Wrap(err, "failed to write data to pipe")
 	}
 
-	// Flush the pipe if possible
-	if err := r.pipeIO.Sync(); err != nil {
-		return errors.Wrap(err, "failed to flush pipe")
-	}
-
 	return nil
 }
