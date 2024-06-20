@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"os"
 
+	"syscall"
+
 	"github.com/OpenTestSolar/testtool-sdk-golang/api"
 	"github.com/OpenTestSolar/testtool-sdk-golang/model"
 	"github.com/nightlyone/lockfile"
@@ -23,7 +25,18 @@ type ReporterClient struct {
 }
 
 func NewReporterClient() (api.Reporter, error) {
+	var pipeFds [2]int
+	if err := syscall.Pipe(pipeFds[:]); err != nil {
+		return nil, errors.Wrap(err, "Error creating pipe")
+	}
+
+	if err := syscall.Dup2(pipeFds[1], PipeWriter); err != nil {
+		return nil, errors.Wrap(err, "Error duplicating fd")
+	}
+
+	syscall.Close(pipeFds[1])
 	pipeIO := os.NewFile(uintptr(PipeWriter), "pipe")
+
 	lockFilePath := "/tmp/testsolar_reporter.lock"
 
 	lock, err := lockfile.New(lockFilePath)
