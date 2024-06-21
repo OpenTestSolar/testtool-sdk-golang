@@ -25,7 +25,7 @@ import (
 
 func main() {
 	// Create a Reporter instance
-	reporter, err := client.NewReporterClient()
+	reporter, err := client.NewReporterClient("/tmp")
 	if err != nil {
 		fmt.Printf("Failed to create reporter: %v\n", err)
 		return
@@ -51,12 +51,6 @@ func main() {
 	err = reporter.ReportCaseResult(caseResult)
 	if err != nil {
 		fmt.Printf("Failed to report case result: %v\n", err)
-	}
-
-	// Close Reporter
-	err = reporter.Close()
-	if err != nil {
-		fmt.Printf("Failed to close reporter: %v\n", err)
 	}
 }
 ```

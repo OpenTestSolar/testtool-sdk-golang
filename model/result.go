@@ -1,6 +1,8 @@
 package model
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"time"
 )
@@ -132,4 +134,11 @@ func (tr TestResult) MarshalJSON() ([]byte, error) {
 		EndTime:   tr.EndTime.UTC().Format(DateTimeFormat),
 		Alias:     (*Alias)(&tr),
 	})
+}
+
+func (tr TestResult) TransferNameToHash() string {
+	hash := md5.New()
+	hash.Write([]byte(tr.Test.Name))
+	hashedBytes := hash.Sum(nil)
+	return hex.EncodeToString(hashedBytes)
 }
