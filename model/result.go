@@ -11,40 +11,40 @@ import (
 const DateTimeFormat = "2006-01-02T15:04:05.000Z"
 
 // ResultType is an enumeration of possible test result types.
-type ResultType string
+type ResultType int32
 
 // Enum values for ResultType
 const (
-	ResultTypeUnknown    ResultType = "UNKNOWN"
-	ResultTypeSucceed    ResultType = "SUCCEED"
-	ResultTypeFailed     ResultType = "FAILED"
-	ResultTypeLoadFailed ResultType = "LOAD_FAILED"
-	ResultTypeIgnored    ResultType = "IGNORED"
-	ResultTypeRunning    ResultType = "RUNNING"
-	ResultTypeWaiting    ResultType = "WAITING"
-	ResultTypeFiltered   ResultType = "FILTERED"
+	ResultTypeUnknown ResultType = iota
+	ResultTypeSucceed
+	ResultTypeFailed
+	ResultTypeLoadFailed
+	ResultTypeIgnored
+	ResultTypeRunning
+	ResultTypeWaiting
+	ResultTypeFiltered
 )
 
 // LogLevel is an enumeration of possible log levels.
-type LogLevel string
+type LogLevel int32
 
 // Enum values for LogLevel
 const (
-	LogLevelTrace LogLevel = "VERBOSE"
-	LogLevelDebug LogLevel = "DEBUG"
-	LogLevelInfo  LogLevel = "INFO"
-	LogLevelWarn  LogLevel = "WARNNING"
-	LogLevelError LogLevel = "ERROR"
+	LogLevelTrace LogLevel = iota
+	LogLevelDebug
+	LogLevelInfo
+	LogLevelWarn
+	LogLevelError
 )
 
 // AttachmentType is an enumeration of possible attachment types.
-type AttachmentType string
+type AttachmentType int32
 
 // Enum values for AttachmentType
 const (
-	AttachmentTypeFile   AttachmentType = "FILE"
-	AttachmentTypeURL    AttachmentType = "URL"
-	AttachmentTypeIFrame AttachmentType = "IFRAME"
+	AttachmentTypeFile AttachmentType = iota
+	AttachmentTypeURL
+	AttachmentTypeIFrame
 )
 
 // TestCaseAssertError represents an assertion error in a test case.
