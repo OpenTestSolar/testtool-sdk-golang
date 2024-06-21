@@ -146,9 +146,9 @@ func verifyCaseResultFields(t *testing.T, result map[string]interface{}) {
 			testCaseLogs := step["Logs"].([]interface{})
 			for _, testCaseLog := range testCaseLogs {
 				testCaseLog := testCaseLog.(map[string]interface{})
-				level := testCaseLog["Level"].(string)
-				if level != "INFO" {
-					t.Errorf("Incorrect log level: %s", level)
+				level := int32(testCaseLog["Level"].(float64))
+				if level != 2 {
+					t.Errorf("Incorrect log level: %d", level)
 				}
 				content := testCaseLog["Content"].(string)
 				if content != "step1 passed" {
@@ -158,9 +158,9 @@ func verifyCaseResultFields(t *testing.T, result map[string]interface{}) {
 			}
 		}
 	}
-	resultType := result["ResultType"].(string)
-	if resultType != "SUCCEED" {
-		t.Errorf("Incorrect result type: %s", resultType)
+	resultType := int32(result["ResultType"].(float64))
+	if resultType != 1 {
+		t.Errorf("Incorrect result type: %d", resultType)
 	}
 	message := result["Message"].(string)
 	if message != "test passed" {
