@@ -2,6 +2,7 @@ package client
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -15,6 +16,22 @@ type ReporterClient struct {
 }
 
 func NewReporterClient(reportPath string) (api.Reporter, error) {
+	var dirName string
+	if filepath.Ext(reportPath) != "" {
+		dirName = filepath.Dir(reportPath)
+	} else {
+		dirName = reportPath
+	}
+	if _, err := os.Stat(dirName); err != nil {
+		if os.IsNotExist(err) {
+			err := os.MkdirAll(dirName, 0755)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to create report path")
+			}
+		} else {
+			return nil, errors.Wrap(err, "failed to stat path")
+		}
+	}
 	return &ReporterClient{
 		reportPath: reportPath,
 	}, nil
@@ -25,7 +42,7 @@ func (r *ReporterClient) ReportLoadResult(loadResult *model.LoadResult) error {
 }
 
 func (r *ReporterClient) ReportCaseResult(caseResult *model.TestResult) error {
-	return r.sendJSON(caseResult, caseResult.TransferNameToHash())
+	return r.sendJSON(caseResult, fmt.Sprintf("%s.json", caseResult.TransferNameToHash()))
 }
 
 func (r *ReporterClient) sendJSON(data interface{}, fileName string) error {

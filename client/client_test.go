@@ -35,18 +35,12 @@ func TestReporter_ReportLoadResult(t *testing.T) {
 	// Prepare test data
 	loadResult := generateLoadResults()
 
-	// Create a temporary dir to hold the report file
-	err := os.Mkdir("./tmp", 0755)
-	if err != nil {
-		t.Fatalf("Failed to create tmp dir: %v", err)
-	}
-	defer os.RemoveAll("./tmp")
-
 	// Create a ReporterClient instance
 	reporter, err := NewReporterClient("./tmp/result.json")
 	if err != nil {
 		t.Fatalf("Failed to create reporter: %v", err)
 	}
+	defer os.RemoveAll("./tmp")
 
 	// Call ReportLoadResult method
 	err = reporter.ReportLoadResult(loadResult)
@@ -107,19 +101,12 @@ func TestReporter_ReportCaseResult(t *testing.T) {
 	// Prepare test data
 	caseResult := generateCaseResult()
 
-	// Create a temporary dir to hold the report file
-	err := os.Mkdir("./tmp", 0755)
-	if err != nil {
-		t.Fatalf("Failed to create tmp dir: %v", err)
-	}
-	defer os.RemoveAll("./tmp")
-
 	// Create a Reporter instance
 	reporter, err := NewReporterClient("./tmp")
 	if err != nil {
 		t.Fatalf("Failed to create reporter: %v", err)
 	}
-
+	defer os.RemoveAll("./tmp")
 	// Call ReportCaseResult method
 	err = reporter.ReportCaseResult(caseResult)
 	if err != nil {
