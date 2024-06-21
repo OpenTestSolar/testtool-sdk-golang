@@ -43,7 +43,7 @@ func TestReporter_ReportLoadResult(t *testing.T) {
 	defer os.RemoveAll("./tmp")
 
 	// Create a ReporterClient instance
-	reporter, err := NewReporterClient("./tmp")
+	reporter, err := NewReporterClient("./tmp/result.json")
 	if err != nil {
 		t.Fatalf("Failed to create reporter: %v", err)
 	}

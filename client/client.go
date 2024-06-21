@@ -21,7 +21,7 @@ func NewReporterClient(reportPath string) (api.Reporter, error) {
 }
 
 func (r *ReporterClient) ReportLoadResult(loadResult *model.LoadResult) error {
-	return r.sendJSON(loadResult, "load.json")
+	return r.sendJSON(loadResult, "")
 }
 
 func (r *ReporterClient) ReportCaseResult(caseResult *model.TestResult) error {
