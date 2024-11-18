@@ -1,10 +1,10 @@
 package client
 
 import (
-	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -35,22 +35,12 @@ func TestReporter_ReportLoadResult(t *testing.T) {
 	// Prepare test data
 	loadResult := generateLoadResults()
 
-	// Create a temporary file to simulate the pipe
-	tmpFile, err := os.CreateTemp("", "pipe")
-	if err != nil {
-		t.Fatalf("Failed to create temp file: %v", err)
-	}
-	defer os.Remove(tmpFile.Name())
-
 	// Create a ReporterClient instance
-	reporter, err := NewReporterClient()
+	reporter, err := NewReporterClient("./tmp/result.json")
 	if err != nil {
 		t.Fatalf("Failed to create reporter: %v", err)
 	}
-	defer reporter.Close()
-
-	// Set reporter's pipeIO to the temporary file
-	reporter.(*ReporterClient).pipeIO = tmpFile
+	defer os.RemoveAll("./tmp")
 
 	// Call ReportLoadResult method
 	err = reporter.ReportLoadResult(loadResult)
@@ -59,7 +49,7 @@ func TestReporter_ReportLoadResult(t *testing.T) {
 	}
 
 	// Verify result
-	verifyPipeData(t, tmpFile)
+	verifyPipeData(t, "./tmp")
 }
 
 func generateCaseResult() *model.TestResult {
@@ -111,23 +101,12 @@ func TestReporter_ReportCaseResult(t *testing.T) {
 	// Prepare test data
 	caseResult := generateCaseResult()
 
-	// Create a temporary file to simulate the pipe
-	tmpFile, err := os.CreateTemp("", "pipe")
-	if err != nil {
-		t.Fatalf("Failed to create temp file: %v", err)
-	}
-	defer os.Remove(tmpFile.Name())
-
 	// Create a Reporter instance
-	reporter, err := NewReporterClient()
+	reporter, err := NewReporterClient("./tmp")
 	if err != nil {
 		t.Fatalf("Failed to create reporter: %v", err)
 	}
-	defer reporter.Close()
-
-	// Set reporter's pipeIO to the temporary file
-	reporter.(*ReporterClient).pipeIO = tmpFile
-
+	defer os.RemoveAll("./tmp")
 	// Call ReportCaseResult method
 	err = reporter.ReportCaseResult(caseResult)
 	if err != nil {
@@ -135,7 +114,7 @@ func TestReporter_ReportCaseResult(t *testing.T) {
 	}
 
 	// Verify result
-	verifyPipeData(t, tmpFile)
+	verifyPipeData(t, "./tmp")
 }
 
 func verifyCaseResultFields(t *testing.T, result map[string]interface{}) {
@@ -167,9 +146,9 @@ func verifyCaseResultFields(t *testing.T, result map[string]interface{}) {
 			testCaseLogs := step["Logs"].([]interface{})
 			for _, testCaseLog := range testCaseLogs {
 				testCaseLog := testCaseLog.(map[string]interface{})
-				level := testCaseLog["Level"].(string)
-				if level != "INFO" {
-					t.Errorf("Incorrect log level: %s", level)
+				level := int32(testCaseLog["Level"].(float64))
+				if level != 2 {
+					t.Errorf("Incorrect log level: %d", level)
 				}
 				content := testCaseLog["Content"].(string)
 				if content != "step1 passed" {
@@ -179,9 +158,9 @@ func verifyCaseResultFields(t *testing.T, result map[string]interface{}) {
 			}
 		}
 	}
-	resultType := result["ResultType"].(string)
-	if resultType != "SUCCEED" {
-		t.Errorf("Incorrect result type: %s", resultType)
+	resultType := int32(result["ResultType"].(float64))
+	if resultType != 1 {
+		t.Errorf("Incorrect result type: %d", resultType)
 	}
 	message := result["Message"].(string)
 	if message != "test passed" {
@@ -221,46 +200,32 @@ func verifyLoadResultFields(t *testing.T, result map[string]interface{}) {
 }
 
 // verifyPipeData reads data from the pipe file and verifies if it meets expectations
-func verifyPipeData(t *testing.T, pipeFile *os.File) {
+func verifyPipeData(t *testing.T, tmpDir string) {
 	// Re-open the temporary file to read from the beginning
-	file, err := os.Open(pipeFile.Name())
+	err := filepath.WalkDir(tmpDir, func(path string, info os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			content, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			var result map[string]interface{}
+			fmt.Printf("Raw json string: %s\n", string(content))
+			err = json.Unmarshal(content, &result)
+			if err != nil {
+				return err
+			}
+			if _, ok := result["ResultType"]; ok {
+				verifyCaseResultFields(t, result)
+			} else {
+				verifyLoadResultFields(t, result)
+			}
+		}
+		return nil
+	})
 	if err != nil {
-		t.Fatalf("Failed to open temp file: %v", err)
-	}
-	defer file.Close()
-
-	// Read and verify magic number
-	var magicNumber uint32
-	err = binary.Read(file, binary.LittleEndian, &magicNumber)
-	if err != nil {
-		t.Fatalf("Failed to read magic number: %v", err)
-	}
-	if magicNumber != MagicNumber {
-		t.Errorf("Expected magic number %v, but got %v", MagicNumber, magicNumber)
-	}
-
-	// Read and verify data length
-	var length uint32
-	err = binary.Read(file, binary.LittleEndian, &length)
-	if err != nil {
-		t.Fatalf("Failed to read length: %v", err)
-	}
-
-	// Read and verify data
-	data := make([]byte, length)
-	_, err = file.Read(data)
-	if err != nil {
-		t.Fatalf("Failed to read data: %v", err)
-	}
-	var result map[string]interface{}
-	fmt.Printf("Raw json string: %s\n", string(data))
-	err = json.Unmarshal(data, &result)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal data to obj: %v", err)
-	}
-	if _, ok := result["ResultType"]; ok {
-		verifyCaseResultFields(t, result)
-	} else {
-		verifyLoadResultFields(t, result)
+		t.Fatalf("Failed to walk temp dir: %v", err)
 	}
 }
