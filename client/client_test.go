@@ -229,3 +229,81 @@ func verifyPipeData(t *testing.T, tmpDir string) {
 		t.Fatalf("Failed to walk temp dir: %v", err)
 	}
 }
+
+func createJunitXml() (string, error) {
+	xmlData := `
+	<testsuite>
+		<testcase classname="path.to.case" name="Test01" time="0.123">
+			<failure message="Test failed" type="AssertionError">Failure details</failure>
+		</testcase>
+	</testsuite>`
+
+	file, err := os.Create("test_junit.xml")
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(xmlData)
+	if err != nil {
+		return "", err
+	}
+	return "test_junit.xml", nil
+}
+
+func verifyJunitXmlParseData(t *testing.T, tmpDir string) {
+	err := filepath.WalkDir(tmpDir, func(path string, info os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			content, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			var result map[string]interface{}
+			fmt.Printf("Raw json string: %s\n", string(content))
+			err = json.Unmarshal(content, &result)
+			if err != nil {
+				return err
+			}
+			resultType := int32(result["ResultType"].(float64))
+			if resultType != 2 {
+				return err
+			}
+			message := result["Message"].(string)
+			if message != "Test failed" {
+				return err
+			}
+			test := result["Test"].(map[string]interface{})
+			name := test["Name"].(string)
+			if name != "path/to/case.go?Test01" {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("Failed to walk temp dir: %v", err)
+	}
+}
+
+func TestReportJunitXml(t *testing.T) {
+	// Create a Reporter instance
+	reporter, err := NewReporterClient("./tmp")
+	if err != nil {
+		t.Fatalf("Failed to create reporter: %v", err)
+	}
+	defer os.RemoveAll("./tmp")
+	junitXmlPath, err := createJunitXml()
+	if err != nil {
+		t.Fatalf("Failed to create junit xml: %v", err)
+	}
+	defer os.Remove(junitXmlPath)
+	// Call ReportJunitXml method
+	err = reporter.ReportJunitXml(junitXmlPath)
+	if err != nil {
+		t.Fatalf("ReportCaseResult failed: %v", err)
+	}
+	verifyJunitXmlParseData(t, "./tmp")
+}

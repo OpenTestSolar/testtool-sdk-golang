@@ -2,9 +2,11 @@ package client
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/OpenTestSolar/testtool-sdk-golang/api"
 	"github.com/OpenTestSolar/testtool-sdk-golang/model"
@@ -45,6 +47,10 @@ func (r *ReporterClient) ReportCaseResult(caseResult *model.TestResult) error {
 	return r.sendJSON(caseResult, fmt.Sprintf("%s.json", caseResult.TransferNameToHash()))
 }
 
+func (r *ReporterClient) ReportJunitXml(filePath string) error {
+	return r.reportJunitXml(filePath)
+}
+
 func (r *ReporterClient) sendJSON(data interface{}, fileName string) error {
 	// Marshal data to JSON with custom datetime encoding
 	jsonData, err := json.Marshal(data)
@@ -64,6 +70,45 @@ func (r *ReporterClient) writeToFile(data []byte, fileName string) error {
 	err := os.WriteFile(filepath.Join(r.reportPath, fileName), data, 0644)
 	if err != nil {
 		return errors.Wrap(err, "failed to write data to file")
+	}
+	return nil
+}
+
+func (r *ReporterClient) reportJunitXml(filePath string) error {
+	byteValue, err := os.ReadFile(filePath)
+	if err != nil {
+		return errors.Wrapf(err, "failed to read file %s", filePath)
+	}
+	var testSuite *model.TestSuite = &model.TestSuite{}
+	err = xml.Unmarshal(byteValue, testSuite)
+	if err != nil {
+		return errors.Wrapf(err, "failed to unmarshal %s to junit xml", string(byteValue))
+	}
+	var testResults []*model.TestResult
+	for _, testCase := range testSuite.TestCases {
+		resultType := model.ResultTypeSucceed
+		message := ""
+		if testCase.Failure != nil {
+			resultType = model.ResultTypeFailed
+			message = testCase.Failure.Message
+		}
+
+		testResult := &model.TestResult{
+			Test: &model.TestCase{
+				Name:       fmt.Sprintf("%s.go?%s", strings.ReplaceAll(testCase.ClassName, ".", "/"), testCase.Name),
+				Attributes: map[string]string{},
+			},
+			ResultType: resultType,
+			Message:    message,
+			Steps:      []*model.TestCaseStep{},
+		}
+
+		testResults = append(testResults, testResult)
+	}
+	for _, testResult := range testResults {
+		if err := r.sendJSON(testResult, fmt.Sprintf("%s.json", testResult.TransferNameToHash())); err != nil {
+			return errors.Wrapf(err, "failed to send JSON to %s", testResult.TransferNameToHash())
+		}
 	}
 	return nil
 }
